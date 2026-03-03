@@ -23,6 +23,9 @@ export default function MenuPage() {
     const [restaurant, setRestaurant] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [notes, setNotes] = useState('');
+
     useEffect(() => {
         const tableParam = searchParams.get('table');
 
@@ -205,7 +208,10 @@ export default function MenuPage() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                                     <span style={{ fontWeight: 'bold' }}>${item.price}</span>
                                     <button
-                                        onClick={() => addToCart(item, 1)}
+                                        onClick={() => {
+                                            setSelectedProduct(item);
+                                            setNotes('');
+                                        }}
                                         style={{
                                             background: 'var(--primary)',
                                             color: 'white',
@@ -229,6 +235,91 @@ export default function MenuPage() {
 
             <OrderStatusTracker />
             <CartSummary />
+
+            {selectedProduct && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '1rem'
+                }}>
+                    <div className="card" style={{ width: '100%', maxWidth: '400px', backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', boxShadow: 'var(--shadow-lg)' }}>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Agregar al pedido</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                            <div style={{ width: '60px', height: '60px', position: 'relative', borderRadius: '0.5rem', overflow: 'hidden' }}>
+                                <Image
+                                    src={selectedProduct.image || '/placeholder-food.jpg'}
+                                    alt={selectedProduct.name}
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                    unoptimized
+                                />
+                            </div>
+                            <div>
+                                <h3 style={{ fontWeight: '600' }}>{selectedProduct.name}</h3>
+                                <p style={{ fontWeight: 'bold', color: 'var(--primary)' }}>${selectedProduct.price}</p>
+                            </div>
+                        </div>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--foreground)' }}>Aclaraciones (Opcional)</label>
+                            <textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                placeholder="Ej. Sin cebolla, sin condimentos, extra aderezo..."
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--border)',
+                                    minHeight: '80px',
+                                    resize: 'none',
+                                    fontFamily: 'inherit',
+                                    fontSize: '0.875rem'
+                                }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button
+                                onClick={() => {
+                                    setSelectedProduct(null);
+                                    setNotes('');
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid var(--border)',
+                                    background: 'transparent',
+                                    color: 'var(--foreground)',
+                                    fontWeight: '500',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={() => {
+                                    addToCart(selectedProduct, 1, notes);
+                                    setSelectedProduct(null);
+                                    setNotes('');
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    border: 'none',
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    fontWeight: '500',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -56,7 +56,7 @@ export default function CartPage() {
                                     position: 'relative'
                                 }}>
                                     <Image
-                                        src={item.image}
+                                        src={item.image || '/placeholder-food.jpg'}
                                         alt={item.name}
                                         fill
                                         style={{ objectFit: 'cover' }}
@@ -70,6 +70,11 @@ export default function CartPage() {
                                 <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
                                     Cantidad: {item.quantity} x ${item.price}
                                 </p>
+                                {item.notes && (
+                                    <p style={{ color: 'var(--muted-foreground)', fontSize: '0.85rem', fontStyle: 'italic', marginTop: '0.25rem' }}>
+                                        Nota: {item.notes}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
