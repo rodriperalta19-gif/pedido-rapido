@@ -23,7 +23,9 @@ interface ProductStats {
     avgPrice: number;
 }
 
-export default function ReportsPage() {
+import { Suspense } from 'react';
+
+function ReportsContent() {
     const [stats, setStats] = useState<ProductStats[]>([]);
     const [loading, setLoading] = useState(true);
     const [restaurantName, setRestaurantName] = useState('');
@@ -214,3 +216,12 @@ export default function ReportsPage() {
         </div>
     );
 }
+
+export default function ReportsPage() {
+    return (
+        <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center' }}>Cargando reporte...</div>}>
+            <ReportsContent />
+        </Suspense>
+    );
+}
+
