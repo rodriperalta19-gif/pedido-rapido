@@ -12,7 +12,9 @@ import { supabase } from '@/lib/supabase';
 
 import { useSearchParams } from 'next/navigation';
 
-export default function MenuPage() {
+import { Suspense } from 'react';
+
+function MenuContent() {
     const { tableId, setTableId, addToCart, requestBill, billRequested, setRestaurantId } = useOrder();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -323,3 +325,12 @@ export default function MenuPage() {
         </div>
     );
 }
+
+export default function MenuPage() {
+    return (
+        <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center' }}>Cargando...</div>}>
+            <MenuContent />
+        </Suspense>
+    );
+}
+

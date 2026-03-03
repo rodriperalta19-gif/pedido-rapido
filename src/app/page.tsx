@@ -6,7 +6,9 @@ import { useOrder } from '@/context/OrderContext';
 import { QrCode } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
-export default function Home() {
+import { Suspense } from 'react';
+
+function HomeContent() {
   const [inputTable, setInputTable] = useState('');
   const { setTableId, setRestaurantId } = useOrder();
   const router = useRouter();
@@ -118,5 +120,13 @@ export default function Home() {
       </form>
 
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: 'center', padding: '2rem' }}>Cargando...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
