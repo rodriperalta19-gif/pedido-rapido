@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useOrder } from '@/context/OrderContext';
-import { QrCode } from 'lucide-react';
+import { Store } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 import { Suspense } from 'react';
@@ -73,7 +73,7 @@ function HomeContent() {
     return (
       <main className="container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', animation: 'pulse 2s infinite' }}>
-          <QrCode size={48} style={{ color: 'var(--primary)', margin: '0 auto 1rem' }} />
+          <Store size={48} style={{ color: 'var(--primary)', margin: '0 auto 1rem' }} />
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Abriendo menú...</h2>
         </div>
       </main>
@@ -97,7 +97,7 @@ function HomeContent() {
         borderRadius: '50%',
         boxShadow: 'var(--shadow)'
       }}>
-        <QrCode size={64} />
+        <Store size={64} />
       </div>
 
       <div>
@@ -105,7 +105,7 @@ function HomeContent() {
           Pedido Rápido
         </h1>
         <p style={{ color: 'var(--muted-foreground)' }}>
-          {restaurantSlug ? 'Ingresa tu número de mesa' : 'Escanea un código QR local o ingresa tu mesa'}
+          Ingresa tu número de mesa
         </p>
       </div>
 

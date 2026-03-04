@@ -126,7 +126,7 @@ function RegisterForm() {
                         <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>Configura tu local y menú en menos de 5 minutos.</p>
                     </div>
                     <div>
-                        <h4 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>🪑 Mesas QR</h4>
+                        <h4 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>🪑 Mesas</h4>
                         <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>Autogestión para clientes y paneles para mozos.</p>
                     </div>
                 </div>

@@ -285,7 +285,7 @@ function TableDashboardContent() {
                                                 className="btn"
                                                 style={{ flex: 1, padding: '0.5rem', background: 'var(--secondary)', fontSize: '0.8rem', color: 'var(--primary)' }}
                                             >
-                                                Menú/QR
+                                                Menú
                                             </a>
                                             <button
                                                 onClick={() => deleteTable(table.id)}
