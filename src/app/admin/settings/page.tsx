@@ -118,7 +118,7 @@ function RestaurantSettingsContent() {
             const { error } = await supabase
                 .from('restaurants')
                 .update({
-                    ...formData,
+                    name: formData.name,
                     logo_url: finalLogoUrl
                 })
                 .eq('id', restaurant.id);
