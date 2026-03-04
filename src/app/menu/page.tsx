@@ -146,7 +146,7 @@ function MenuContent() {
                     disabled={billRequested}
                     className="btn"
                     style={{
-                        background: billRequested ? 'var(--muted)' : 'var(--secondary)',
+                        background: billRequested ? 'var(--muted)' : '#10b981',
                         color: billRequested ? 'var(--muted-foreground)' : 'white',
                         fontSize: '0.9rem',
                         padding: '0.5rem 1rem'

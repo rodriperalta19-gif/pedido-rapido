@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Table, Order, TableStatus, OrderStatus } from '@/lib/types';
 import {
     LayoutDashboard,
@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
-export default function TableDashboard() {
+function TableDashboardContent() {
     const [tables, setTables] = useState<Table[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -37,6 +37,8 @@ export default function TableDashboard() {
     const [loadingItems, setLoadingItems] = useState(false);
 
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const resIdParam = searchParams.get('resId');
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -52,17 +54,30 @@ export default function TableDashboard() {
                 .eq('id', session.user.id)
                 .single();
 
-            if (profile && profile.restaurant_id) {
-                setRestaurantId(profile.restaurant_id);
-                fetchData(profile.restaurant_id);
-                const cleanup = setupRealtime(profile.restaurant_id);
+            const isMasterEmail = session.user.email?.toLowerCase() === 'admin@turestaurante.com';
+            const effectiveRole = isMasterEmail ? 'superadmin' : profile?.role;
+
+            let targetResId = profile?.restaurant_id;
+            if ((isMasterEmail || effectiveRole === 'superadmin') && resIdParam) {
+                targetResId = resIdParam;
+            }
+
+            if (targetResId) {
+                setRestaurantId(targetResId);
+                fetchData(targetResId);
+                const cleanup = setupRealtime(targetResId);
                 return cleanup;
             } else {
                 router.push('/admin');
             }
         };
-        checkAuth();
-    }, [router]);
+        const cleanupPromise = checkAuth();
+        return () => {
+            cleanupPromise.then(cleanup => {
+                if (typeof cleanup === 'function') cleanup();
+            });
+        };
+    }, [router, resIdParam]);
 
     const fetchData = async (resId: string) => {
         setLoading(true);
@@ -341,5 +356,13 @@ export default function TableDashboard() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function TableDashboard() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center" style={{ color: '#64748b' }}>Cargando...</div>}>
+            <TableDashboardContent />
+        </Suspense>
     );
 }

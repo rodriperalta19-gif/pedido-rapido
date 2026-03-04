@@ -122,7 +122,7 @@ function AdminContent() {
                 .from('products')
                 .select('*')
                 .eq('restaurant_id', profile.restaurant_id)
-                .order('created_at', { ascending: false });
+                .order('category', { ascending: true });
 
             if (error) throw error;
             setProducts(data || []);
