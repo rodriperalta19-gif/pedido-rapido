@@ -144,7 +144,7 @@ export default function ProductForm({ initialData, isEditing = false }: ProductF
             }
 
             alert('¡Producto guardado correctamente!');
-            router.push('/admin');
+            router.push(userProfile?.role === 'superadmin' ? '/superadmin' : '/admin');
             router.refresh();
         } catch (error: any) {
             console.error('Error completo:', error);
