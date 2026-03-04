@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Settings, Image as ImageIcon, QrCode, MapPin, Phone, Clock, Save, ArrowLeft } from 'lucide-react';
 
-export default function RestaurantSettings() {
+function RestaurantSettingsContent() {
     const [restaurant, setRestaurant] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -21,8 +21,11 @@ export default function RestaurantSettings() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const resIdParam = searchParams.get('resId');
 
     const [baseUrl, setBaseUrl] = useState('');
+    const [userProfile, setUserProfile] = useState<any>(null);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -39,26 +42,45 @@ export default function RestaurantSettings() {
 
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('*, restaurants(*)')
+                .select('*')
                 .eq('id', session.user.id)
                 .single();
 
-            if (profile?.restaurants) {
-                const res = profile.restaurants;
-                setRestaurant(res);
-                setFormData({
-                    name: res.name || '',
-                    address: res.address || '',
-                    phone: res.phone || '',
-                    opening_hours: res.opening_hours || '',
-                });
-                setLogoPreview(res.logo_url);
+            const isMasterEmail = session.user.email?.toLowerCase() === 'admin@turestaurante.com';
+            const effectiveRole = isMasterEmail ? 'superadmin' : profile?.role;
+
+            let targetResId = profile?.restaurant_id;
+            if ((isMasterEmail || effectiveRole === 'superadmin') && resIdParam) {
+                targetResId = resIdParam;
+            }
+
+            if (targetResId) {
+                setUserProfile({ ...profile, role: effectiveRole, restaurant_id: targetResId });
+
+                const { data: res } = await supabase
+                    .from('restaurants')
+                    .select('*')
+                    .eq('id', targetResId)
+                    .single();
+
+                if (res) {
+                    setRestaurant(res);
+                    setFormData({
+                        name: res.name || '',
+                        address: res.address || '',
+                        phone: res.phone || '',
+                        opening_hours: res.opening_hours || '',
+                    });
+                    setLogoPreview(res.logo_url);
+                }
+            } else {
+                router.push('/admin');
             }
             setLoading(false);
         };
 
         fetchRestaurant();
-    }, [router]);
+    }, [router, resIdParam]);
 
     useEffect(() => {
         if (baseUrl) localStorage.setItem('qr_base_url', baseUrl);
@@ -75,6 +97,7 @@ export default function RestaurantSettings() {
     };
 
     const uploadLogo = async (file: File): Promise<string> => {
+        if (!restaurant) return '';
         const fileExt = file.name.split('.').pop();
         const fileName = `logo_${restaurant.id}_${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file);
@@ -85,6 +108,7 @@ export default function RestaurantSettings() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!restaurant) return;
         setSaving(true);
 
         try {
@@ -124,7 +148,7 @@ export default function RestaurantSettings() {
                         </h1>
                         <p style={{ color: '#64748b', marginTop: '0.5rem' }}>Personaliza la información de tu local y genera tus códigos QR</p>
                     </div>
-                    <button onClick={() => router.push('/admin')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', border: '1px solid #e2e8f0', padding: '0.75rem 1rem', borderRadius: '0.75rem', color: '#475569', fontWeight: '600', cursor: 'pointer' }}>
+                    <button onClick={() => router.push(resIdParam ? `/admin?resId=${resIdParam}` : '/admin')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', border: '1px solid #e2e8f0', padding: '0.75rem 1rem', borderRadius: '0.75rem', color: '#475569', fontWeight: '600', cursor: 'pointer' }}>
                         <ArrowLeft size={18} /> Volver
                     </button>
                 </header>
@@ -269,5 +293,13 @@ export default function RestaurantSettings() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function RestaurantSettings() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center">Cargando...</div>}>
+            <RestaurantSettingsContent />
+        </Suspense>
     );
 }

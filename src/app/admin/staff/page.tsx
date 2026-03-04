@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
     LayoutDashboard,
     Armchair,
@@ -18,11 +18,13 @@ import {
 } from 'lucide-react';
 import AdminSidebar from '@/components/AdminSidebar';
 
-export default function StaffManagement() {
+function StaffManagementContent() {
     const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [userProfile, setUserProfile] = useState<any>(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const resIdParam = searchParams.get('resId');
 
     useEffect(() => {
         const checkUser = async () => {
@@ -38,13 +40,23 @@ export default function StaffManagement() {
                 .eq('id', session.user.id)
                 .single();
 
-            if (profile) {
-                setUserProfile(profile);
-                fetchStaff(profile.restaurant_id);
+            const isMasterEmail = session.user.email?.toLowerCase() === 'admin@turestaurante.com';
+            const effectiveRole = isMasterEmail ? 'superadmin' : profile?.role;
+
+            let targetResId = profile?.restaurant_id;
+            if ((isMasterEmail || effectiveRole === 'superadmin') && resIdParam) {
+                targetResId = resIdParam;
+            }
+
+            if (targetResId) {
+                setUserProfile({ ...profile, role: effectiveRole, restaurant_id: targetResId });
+                fetchStaff(targetResId);
+            } else {
+                router.push('/admin');
             }
         };
         checkUser();
-    }, [router]);
+    }, [router, resIdParam]);
 
     const fetchStaff = async (restaurantId: string) => {
         if (!restaurantId) return;
@@ -203,5 +215,13 @@ export default function StaffManagement() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function StaffManagement() {
+    return (
+        <Suspense fallback={<div className="p-8">Cargando...</div>}>
+            <StaffManagementContent />
+        </Suspense>
     );
 }
