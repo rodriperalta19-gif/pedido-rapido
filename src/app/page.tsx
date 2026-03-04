@@ -16,8 +16,9 @@ function HomeContent() {
   const restaurantSlug = searchParams.get('r');
 
   useEffect(() => {
+    let currentResId = null;
     const checkParams = async () => {
-      let currentResId = null;
+
       if (restaurantSlug) {
         // Intentar buscar por slug primero, luego por ID si falla
         let { data } = await supabase
@@ -46,7 +47,9 @@ function HomeContent() {
       const tableParam = searchParams.get('table');
       if (tableParam) {
         setTableId(tableParam);
-        const target = restaurantSlug ? `/menu?r=${restaurantSlug}` : '/menu';
+        const target = restaurantSlug
+          ? `/menu?r=${restaurantSlug}&table=${tableParam}`
+          : `/menu?table=${tableParam}`;
         router.replace(target);
       }
     };
@@ -60,11 +63,22 @@ function HomeContent() {
     setTableId(inputTable);
     // Redirigir al menú asegurando que llevamos el slug del restaurante en la URL
     if (restaurantSlug) {
-      router.push(`/menu?r=${restaurantSlug}`);
+      router.push(`/menu?r=${restaurantSlug}&table=${inputTable}`);
     } else {
-      router.push('/menu');
+      router.push(`/menu?table=${inputTable}`);
     }
   };
+
+  if (restaurantSlug && searchParams.get('table')) {
+    return (
+      <main className="container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', animation: 'pulse 2s infinite' }}>
+          <QrCode size={48} style={{ color: 'var(--primary)', margin: '0 auto 1rem' }} />
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Abriendo menú...</h2>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="container" style={{
@@ -91,14 +105,14 @@ function HomeContent() {
           Pedido Rápido
         </h1>
         <p style={{ color: 'var(--muted-foreground)' }}>
-          Escanea el código QR o ingresa tu número de mesa
+          {restaurantSlug ? 'Ingresa tu número de mesa' : 'Escanea un código QR local o ingresa tu mesa'}
         </p>
       </div>
 
       <form onSubmit={handleStart} style={{ width: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <input
           type="text"
-          placeholder="Número de Mesa"
+          placeholder="Número de Mesa..."
           value={inputTable}
           onChange={(e) => setInputTable(e.target.value)}
           style={{
@@ -109,13 +123,14 @@ function HomeContent() {
             textAlign: 'center',
             width: '100%'
           }}
+          autoFocus
         />
         <button
           type="submit"
           className="btn btn-primary"
           style={{ width: '100%', fontSize: '1.2rem' }}
         >
-          Comenzar Pedido
+          Ver Menú
         </button>
       </form>
 
